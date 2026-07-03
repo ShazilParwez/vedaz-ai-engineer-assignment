@@ -3,3 +3,10 @@ sentence-transformers
 scikit-learn
 numpy
 tqdm
+torch
+transformers
+peft
+trl
+accelerate
+bitsandbytes
+datasets

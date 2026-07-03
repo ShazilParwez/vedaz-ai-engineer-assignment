@@ -8,6 +8,7 @@ The project contains three major components:
 - **Dataset Checker**: Validates structure, detects duplicates, and filters unsafe conversations.
 - **Synthetic Data Generator**: Uses the Gemini API to autonomously produce diverse, realistic chat data.
 - **Response Evaluator**: Uses an LLM-as-a-Judge approach to score the quality of the astrological advice.
+- **Model Fine-Tuning**: Trains a Qwen2.5-3B-Instruct model using parameter-efficient QLoRA.
 
 ---
 
@@ -66,6 +67,12 @@ evaluation.csv
 - **Astrology limitation scoring**: Rates how naturally the AI mentions the limits of astrology.
 - **CSV report generation**: Exports detailed scores and reasoning for every evaluation.
 
+### train.py
+- **QLoRA Fine-Tuning**: Utilizes BitsAndBytes 4-bit quantization to fit the 3B model onto consumer hardware.
+- **PEFT (LoRA)**: Freezes base weights and injects low-rank trainable matrices for memory-efficient training.
+- **TRL SFTTrainer**: Simplifies the supervised fine-tuning pipeline and chat template formatting.
+- **Hardware Optimized**: Employs `paged_adamw_8bit` optimizer and Accelerate for optimal VRAM usage.
+
 ---
 
 ## Installation
@@ -110,6 +117,13 @@ Runs the LLM Judge against the test questions and exports scores.
 python evaluator.py --input test.jsonl --output evaluation.csv
 ```
 
+### 4. Fine-Tune the Model (QLoRA)
+Trains the `Qwen/Qwen2.5-3B-Instruct` model on the cleaned dataset.
+*Hardware Requirement: A GPU with at least 8GB-12GB of VRAM (e.g., RTX 3060, T4) is required for 4-bit 3B training.*
+```bash
+python train.py --dataset train.jsonl --output_dir ./outputs
+```
+
 ---
 
 ## Project Structure
@@ -117,6 +131,7 @@ python evaluator.py --input test.jsonl --output evaluation.csv
 - `checker.py`: Core logic for validating data structure, catching safety violations, and removing duplicates.
 - `generator.py`: Script to dynamically prompt the Gemini API to build synthetic datasets.
 - `evaluator.py`: Script to autonomously evaluate and score the AI Astrologer's responses using an LLM Judge.
+- `train.py`: The QLoRA training script using TRL, PEFT, and Accelerate.
 - `generated_chats.jsonl`: The raw output dataset containing all generated conversations.
 - `checker_report.txt`: A detailed report showing statistics, duplication counts, and validation errors.
 - `flagged_chats.json`: Conversations that were caught and rejected by the safety filters.
@@ -168,6 +183,7 @@ python evaluator.py --input test.jsonl --output evaluation.csv
 - **NumPy**: Matrix operations for embedding arrays.
 - **Regex**: Fast, heuristic-based safety policy enforcement.
 - **tqdm**: CLI progress bars for long-running generation and evaluation loops.
+- **Hugging Face Ecosystem**: `transformers`, `peft`, `trl`, `accelerate`, `bitsandbytes`, and `datasets` for QLoRA fine-tuning.
 
 ---
 
@@ -187,4 +203,5 @@ python evaluator.py --input test.jsonl --output evaluation.csv
 - [x] Duplicate detection
 - [x] Synthetic data generation
 - [x] Response evaluation
+- [x] QLoRA fine-tuning pipeline
 - [x] Documentation
